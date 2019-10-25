@@ -144,8 +144,8 @@ To write a plugin, you want to understand which data is needed and how your clou
 
 ### Collectors
 
-* [AWS Collector](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js)
-* [Azure Collector](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js)
+* [AWS Collecttion](#aws-collection)
+* [Azure Collecttion](#azure-collection)
 
 #### AWS Collection
 
@@ -175,6 +175,8 @@ getGroup: {
 
 This section tells CloudSploit to wait until the `IAM:listGroups` call has been made, and then loop through the data that is returned. The `filterKey` tells CloudSploit the name of the key from the original response, while `filterValue` tells it which property to set in the `getGroup` call filter. For example: `iam.getGroup({GroupName:abc})` where `abc` is the `GroupName` from the returned list. CloudSploit will loop through each response, re-invoking `getGroup` for each element.
 
+You can find the [AWS Collector here.](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js)
+
 #### Azure Collection
 
 The following declaration tells the Cloudsploit collection engine to query the Compute Management Service using the virtualMachines:listAll call.
@@ -202,6 +204,8 @@ virtualMachineExtensions: {
   }
 },
 ```
+
+You can find the [Azure Collector here.](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js)
 
 ### Scanning Phase
 
