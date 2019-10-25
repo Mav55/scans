@@ -27,16 +27,19 @@ npm install
 ```
 
 ## Configuration
-To begin using the scanner, edit the `index.js` file with the corresponding cloud infrastructure connection settings. You can also set a file containing such settings. 
+To begin using the scanner, edit the `index.js` file with the corresponding settings. You can use any of these three options:
+ * Enter your settings [inline](https://github.com/Mav55/scans/blob/readme-updates/index.js#L13-L53).
+ * Create a json [file](https://github.com/Mav55/scans/blob/readme-updates/index.js#L57-L61).
+ * Use [environment variables](https://github.com/Mav55/scans/blob/readme-updates/index.js#L64-L109). 
 
 Cloud Infrastructure configuration steps:
 
-1. [AWS](#aws)
-2. [Azure](#azure) 
+* [AWS](#aws)
+* [Azure](#azure) 
 
 #### AWS
 
-Create a cloudsploit user, with the SecurityAudit policy.
+Create a "cloudsploit" user, with the `SecurityAudit` policy.
 
 ```
 1. Navigate to the [IAM console](https://console.aws.amazon.com/iam/home).
@@ -51,7 +54,7 @@ Create a cloudsploit user, with the SecurityAudit policy.
 9. Paste them into the corresponding AWS credentials section of the `index.js` file.
 ```
  
-Also, you can set the typical environment variables expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`, and those will be used instead of the ones in the `index.js` file.
+If using environment variables, the same ones expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`, can be used.
 
 For more information on using our hosted scanner, [click here](#other-notes)
 
@@ -91,9 +94,6 @@ node index.js
 
 In the list of plugins in the `exports.js` file, comment out any plugins you do not wish to run. You can also skip entire regions by modifying the `skipRegions` array.
 
-## Optional Plugins
-
-Some plugins may require additional permissions not outlined above. Since their required IAM permissions are not included in the `SecurityAudit` managed policy, these plugins are not included in the `exports.js` file by default. To enable these plugins, uncomment them from the `exports.js` file, if applicable, add the policies required to an inline IAM policy, and re-run the scan.
 
 ## Compliance
 
@@ -137,10 +137,16 @@ node index.js --console --junit=./out.xml --csv=./out.csv
 
 CloudSploit works in two phases. First, it queries the cloud infrastructure APIs for various metadata about your account. This is known as the "collection" phase. Once all the necessary data has been collected, the result is passed to the second phase - "scanning." The scan uses the collected data to search for potential misconfigurations, risks, and other security issues. These are then provided as output.
 
-## Writing a Plugin
-### Collection Phase
+## Writing a Plugin  
+
+### Collection Phase  
+
 To write a plugin, you must understand what cloud infrastructure API calls your scan makes. These must be added to the `collect.js` file. This file determines the cloud infrastructure API calls and the order in which they are made. For example:
+
 #### AWS
+
+The following declaration tells the CloudSploit collection engine to query the CloudFront service using the `listDistributions` call and then save the results returned under `DistributionList.Items`.
+
 ```
 CloudFront: {
   listDistributions: {
@@ -149,9 +155,6 @@ CloudFront: {
   }
 },
 ```
-This declaration tells the CloudSploit collection engine to query the CloudFront service using the `listDistributions` call and then save the results returned under `DistributionList.Items`.
-
-
 
 The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all EC2 instances, and then loop through each instance and run a more detailed call, you would add the `EC2:DescribeInstances` call in the first `calls` section and then add the more detailed call in `postCalls` setting it to rely on the output of `DescribeInstances`.
 
@@ -164,8 +167,13 @@ getGroup: {
   filterValue: 'GroupName'
 },
 ```
+
 This section tells CloudSploit to wait until the `IAM:listGroups` call has been made, and then loop through the data that is returned. The `filterKey` tells CloudSploit the name of the key from the original response, while `filterValue` tells it which property to set in the `getGroup` call filter. For example: `iam.getGroup({GroupName:abc})` where `abc` is the `GroupName` from the returned list. CloudSploit will loop through each response, re-invoking `getGroup` for each element.
+
 #### Azure
+
+The following declaration tells the Cloudsploit collection engine to query the Compute Management Service using the virtualMachines:listAll call.
+
 ```
 virtualMachines: {
   listAll: {
@@ -174,9 +182,9 @@ virtualMachines: {
   }
 },
 ```
-This Declaration tells the Cloudsploit collection engine to query the Compute Management Service using the virtualMachines:listAll call.
 
 The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all virtual machine instances, and then loop through each instance and run a more detailed call, you would add the more detailed call in `postcalls` setting it to rely on the output of `virtualMachines:listAll`.
+
 ```
 virtualMachineExtensions: {
   list: {
@@ -189,12 +197,14 @@ virtualMachineExtensions: {
   }
 },
 ```
+
 ### Scanning Phase
+
 After the data has been collected, it is passed to the scanning engine when the results are analyzed for risks. Each plugin must export the following:
 
 * Exports the following:
   * ```title``` (string): a user-friendly title for the plugin
-  * ```category``` (string): the cloud infrastructure category (EC2, RDS, ELB, etc.)
+  * ```category``` (string): the cloud infrastructure category (i.e.: **_AWS:_** EC2, RDS, ELB, etc. **_Azure:_** )
   * ```description``` (string): a description of what the plugin does
   * ```more_info``` (string): a more detailed description of the risk being tested for
   * ```link``` (string): an cloud infrastructure help URL describing the service or risk, preferably with mitigation methods
@@ -279,7 +289,7 @@ The `addResult` function ensures we are adding the results to the `results` arra
 The `resource` is optional, and the `score` must be between 0 and 3 to indicate PASS, WARN, FAIL, or UNKNOWN.
 
 #### Azure
-To more clearly illustrate writing a new plugin, let's consider the "VirtualMachines vmEndpointProtection" plugin. First, we know that we will need to query for a list of virtual machines via `virtualMachines:listAll`, then loop through each group and query for the more detailed set of data via `virtualMachineExtensions:list`.
+To more clearly illustrate writing a new plugin, let us consider the Virtual Machines VM Endpoint Protection plugin `plugins/azure/virtualmachines/vmEndpointProtection.js` . First, we know that we will need to query for a list of virtual machines via `virtualMachines:listAll`, then loop through each group and query for the more detailed set of data via `virtualMachineExtensions:list`.
 
 We'll add these API calls to `collect.js`. First, under `calls` add:
 
@@ -345,9 +355,11 @@ The `resource` is optional, and the `score` must be between 0 and 3 to indicate 
 
 When using the [hosted scanner](https://cloudsploit.com/scan), you will be able to see an intuitive visual representation of teh can results. For example, in the CloudSploit console, printable scan results look as folllows:
 
-[<img src="cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
+[<img src="https://github.com/Mav55/scans/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
 
-You will want to create a cross-account IAM role. Cross-account roles enable you to share access to your account with another AWS account using the same policy model that you're used to.
+### Cross-account IAM role
+
+Cross-account roles enable you to share access to your account with another AWS account using the same policy model that you're used to within AWS services' scope.
  
 The advantage is that cross-account roles are much more secure than key-based access, since an attacker who steals a cross-account role ARN still cannot make API calls unless he/she also infiltrates the AWS account that has been authorized to use the role in question.
 
