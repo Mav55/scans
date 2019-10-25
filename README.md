@@ -28,9 +28,9 @@ npm install
 
 ## Configuration
 To begin using the scanner, edit the `index.js` file with the corresponding settings. You can use any of these three options:
- * Enter your settings [inline](https://github.com/Mav55/scans/blob/readme-updates/index.js#L13-L53).
- * Create a json [file](https://github.com/Mav55/scans/blob/readme-updates/index.js#L57-L61).
- * Use [environment variables](https://github.com/Mav55/scans/blob/readme-updates/index.js#L64-L109). 
+ * Enter your settings [inline](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L13-L53).
+ * Create a json [file](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L57-L61).
+ * Use [environment variables](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L64-L109). 
 
 Cloud Infrastructure configuration steps:
 
@@ -135,13 +135,17 @@ node index.js --console --junit=./out.xml --csv=./out.csv
 
 ## Architecture
 
-CloudSploit works in two phases. First, it queries the cloud infrastructure APIs for various metadata about your account. This is known as the "collection" phase. Once all the necessary data has been collected, the result is passed to the second phase - "scanning." The scan uses the collected data to search for potential misconfigurations, risks, and other security issues. These are then provided as output.
-
+CloudSploit works in two phases. First, it queries the cloud infrastructure APIs for various metadata about your account, namely the "collection" phase. Once all the necessary data is collected, the result is passed to the "scanning" phase. The scan uses the collected data to search for potential misconfigurations, risks, and other security issues, which are the resulting output.
 ## Writing a Plugin  
 
 ### Collection Phase  
 
-To write a plugin, you will want to understand what cloud infrastructure API calls your scan makes. These must be added to the `collect.js` file. This file determines the cloud infrastructure API calls and the order in which they are made. For example:
+To write a plugin, you want to understand which data is needed and how your cloud infrastructure provides them via their API calls. Once you have identified the API calls needed, you can add them to the collect.js file for your cloud infrastructure provider. This file determines the cloud infrastructure API calls and their run-order.
+
+### Collectors
+
+* [AWS Collector](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js)
+* [Azure Collector](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js)
 
 #### AWS Collection
 
@@ -156,9 +160,10 @@ CloudFront: {
 },
 ```
 
-The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all EC2 instances, and then loop through each instance and run a more detailed call, you would add the `EC2:DescribeInstances` call in the first `calls` section and then add the more detailed call in `postCalls` setting it to rely on the output of `DescribeInstances`.
+The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `CloudFront distributions`, and then loop through each one and run a more detailed call, you would add the `CloudFront:listDistributions` call [in the `calls` section](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L58-L64) and then the [more detailed call in `postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L467-L473), setting it to rely on the output of `listDistributions` call.
 
-An example:
+An example:  
+
 ```
 getGroup: {
   reliesOnService: 'iam',
@@ -183,7 +188,7 @@ virtualMachines: {
 },
 ```
 
-The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all virtual machine instances, and then loop through each instance and run a more detailed call, you would add the more detailed call in `postcalls` setting it to rely on the output of `virtualMachines:listAll`.
+The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `Virtual Machine instances`, and then loop through each one and run a more detailed call, you would add the `virtualMachines:listAll` call [in the `calls` section](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L50-L55) and then the [more detailed call in `postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L293-L302), setting it to rely on the output of `listDistributions` call.
 
 ```
 virtualMachineExtensions: {
@@ -355,7 +360,7 @@ The `resource` is optional, and the `score` must be between 0 and 3 to indicate 
 
 When using the [hosted scanner](https://cloudsploit.com/scan), you will be able to see an intuitive visual representation of the scan results. In CloudSploit's console, printable scan results look as folllows:
 
-[<img src="https://github.com/Mav55/scans/blob/readme-updates/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
+[<img src="https://github.com/cloudsploit/scans/blob/readme-updates/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
 
 ### Cross-account IAM role
 
