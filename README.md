@@ -7,7 +7,7 @@ CloudSploit Scans
 =================
 
 ## Background
-CloudSploit scans is an open-source project designed to allow detection of security risks in an AWS account. These scripts are designed to run against an AWS account and return a series of potential misconfigurations and security risks.
+CloudSploit scans is an open-source project designed to allow detection of security risks in cloud infrastructure accounts. These scripts are designed to return a series of potential misconfigurations and security risks.
 
 ## SaaS Product
 
@@ -27,26 +27,31 @@ npm install
 ```
 
 ## Setup
-To begin using the scanner, edit the `index.js` file with your AWS key, secret, and optionally (for temporary credentials), a session token. You can also set a file containing credentials. To determine the permissions associated with your credentials, see the [permissions section below](#permissions). In the list of plugins in the `exports.js` file, comment out any plugins you do not wish to run. You can also skip entire regions by modifying the `skipRegions` array.
+To begin using the scanner, edit the `index.js` file with the corresponding cloud infrastructure connection settings. You can also set a file containing such settings. To determine the permissions associated with your credentials, see the [permissions section below](#permissions). In the list of plugins in the `exports.js` file, comment out any plugins you do not wish to run. You can also skip entire regions by modifying the `skipRegions` array.
 
-You can also set the typical environment variables expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
+AWS: You can set the typical environment variables expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
 
 ### Cross Account Roles
+
+
+#### AWS
 When using the [hosted scanner](https://cloudsploit.com/scan), you'll need to create a cross-account IAM role. Cross-account roles enable you to share access to your account with another AWS account using the same policy model that you're used to. The advantage is that cross-account roles are much more secure than key-based access, since an attacker who steals a cross-account role ARN still can't make API calls unless they also infiltrate the authorized AWS account.
 
 To create a cross-account role:
 
 1. Navigate to the [IAM console](https://console.aws.amazon.com/iam/home).
-2. Click "Roles" and then "Create New Role".
-3. Provide a role name (suggested "cloudsploit").
-4. Select the "Role for Cross-Account Access" radio button.
-5. Click the "Select" button next to "Allows IAM users from a 3rd party AWS account to access this account."
-6. Enter `057012691312` for the account ID (this is the ID of CloudSploit's AWS account).
-7. Copy the auto-generated external ID from the CloudSploit web page and paste it into the AWS IAM console textbox.
-8. Ensure that "Require MFA" is _not_ selected.
-9. Click "Next Step".
-10. Select the "Security Audit" policy. Then click "Next Step" again.
-11. Click through to create the role.
+Log into your AWS account and navigate to the IAM console.
+Create a new IAM role.
+When prompted for a trusted entity select: "Another AWS account".
+Enter "057012691312" for the account to trust (Account ID).
+Check the box to "Require external ID" and enter the external ID displayed below.
+Ensure that MFA token is not selected.
+Select the "SecurityAudit" managed policy.
+Enter a memorable role name and create the role.
+Then click on the role name and copy the role ARN for use in the next step.
+
+#### Azure
+Steps for Azure go here
 
 ## Permissions
 The scans require read-only permissions to your account. This can be done by adding the "Security Audit" AWS managed policy to your IAM user or role.
