@@ -160,7 +160,7 @@ CloudFront: {
 },
 ```
 
-The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `CloudFront distributions`, and then loop through each one and run a more detailed call, you would add the `CloudFront:listDistributions` call [in the `calls` section](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L58-L64) and then the [more detailed call in `postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L467-L473), setting it to rely on the output of `listDistributions` call.
+The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `CloudFront distributions`, and then loop through each one and run a more detailed call, you would add the `CloudFront:listDistributions` call in the [`calls`](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L58-L64) section and then the more detailed call in [`postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/aws/collector.js#L467-L473), setting it to rely on the output of `listDistributions` call.
 
 An example:  
 
@@ -190,7 +190,7 @@ virtualMachines: {
 },
 ```
 
-The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `Virtual Machine instances`, and then loop through each one and run a more detailed call, you would add the `virtualMachines:listAll` call [in the `calls` section](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L50-L55) and then the [more detailed call in `postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L293-L302), setting it to rely on the output of `listDistributions` call.
+The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls first returned. For example, if you need to query for all `Virtual Machine instances`, and then loop through each one and run a more detailed call, you would add the `virtualMachines:listAll` call in the [`calls`](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L50-L55) section and then the more detailed call in [`postcalls`](https://github.com/cloudsploit/scans/blob/master/collectors/azure/collector.js#L293-L302), setting it to rely on the output of `listDistributions` call.
 
 ```
 virtualMachineExtensions: {
