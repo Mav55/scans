@@ -29,26 +29,28 @@ npm install
 ## Setup
 To begin using the scanner, edit the `index.js` file with the corresponding cloud infrastructure connection settings. You can also set a file containing such settings. To determine the permissions associated with your credentials, see the [permissions section below](#permissions). In the list of plugins in the `exports.js` file, comment out any plugins you do not wish to run. You can also skip entire regions by modifying the `skipRegions` array.
 
-AWS: You can set the typical environment variables expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
-
-### Cross Account Roles
-
+### Authentication
 
 #### AWS
-When using the [hosted scanner](https://cloudsploit.com/scan), you'll need to create a cross-account IAM role. Cross-account roles enable you to share access to your account with another AWS account using the same policy model that you're used to. The advantage is that cross-account roles are much more secure than key-based access, since an attacker who steals a cross-account role ARN still can't make API calls unless they also infiltrate the authorized AWS account.
+
+Create a cloudsploit user.
+ 
+You can set the typical environment variables expected by the aws sdks, namely `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`.
 
 To create a cross-account role:
 
 1. Navigate to the [IAM console](https://console.aws.amazon.com/iam/home).
-Log into your AWS account and navigate to the IAM console.
-Create a new IAM role.
-When prompted for a trusted entity select: "Another AWS account".
-Enter "057012691312" for the account to trust (Account ID).
-Check the box to "Require external ID" and enter the external ID displayed below.
-Ensure that MFA token is not selected.
-Select the "SecurityAudit" managed policy.
-Enter a memorable role name and create the role.
-Then click on the role name and copy the role ARN for use in the next step.
+2. Log into your AWS account and navigate to the IAM console.
+3. Create a new IAM role.
+4. When prompted for a trusted entity select: "Another AWS account".
+5. Enter "057012691312" for the account to trust (Account ID).
+6. Check the box to "Require external ID" and enter the external ID displayed below.
+7. Ensure that MFA token is not selected.
+8. Select the "SecurityAudit" managed policy.
+9. Enter a memorable role name and create the role.
+10. Then click on the role name and copy the role ARN for use in the next step.
+
+When using the [hosted scanner](https://cloudsploit.com/scan), you'll need to create a cross-account IAM role. Cross-account roles enable you to share access to your account with another AWS account using the same policy model that you're used to. The advantage is that cross-account roles are much more secure than key-based access, since an attacker who steals a cross-account role ARN still can't make API calls unless they also infiltrate the authorized AWS account.
 
 #### Azure
 Steps for Azure go here
