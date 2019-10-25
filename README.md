@@ -135,11 +135,12 @@ node index.js --console --junit=./out.xml --csv=./out.csv
 
 ## Architecture
 
-CloudSploit works in two phases. First, it queries the AWS APIs for various metadata about your account. This is known as the "collection" phase. Once all the necessary data has been collected, the result is passed to the second phase - "scanning." The scan uses the collected data to search for potential misconfigurations, risks, and other security issues. These are then provided as output.
+CloudSploit works in two phases. First, it queries the cloud infrastructure APIs for various metadata about your account. This is known as the "collection" phase. Once all the necessary data has been collected, the result is passed to the second phase - "scanning." The scan uses the collected data to search for potential misconfigurations, risks, and other security issues. These are then provided as output.
 
 ## Writing a Plugin
 ### Collection Phase
-To write a plugin, you must understand what AWS API calls your scan makes. These must be added to the `collect.js` file. This file determines the AWS API calls and the order in which they are made. For example:
+To write a plugin, you must understand what cloud infrastructure API calls your scan makes. These must be added to the `collect.js` file. This file determines the cloud infrastructure API calls and the order in which they are made. For example:
+#### AWS
 ```
 CloudFront: {
   listDistributions: {
@@ -149,6 +150,8 @@ CloudFront: {
 },
 ```
 This declaration tells the CloudSploit collection engine to query the CloudFront service using the `listDistributions` call and then save the results returned under `DistributionList.Items`.
+
+
 
 The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all EC2 instances, and then loop through each instance and run a more detailed call, you would add the `EC2:DescribeInstances` call in the first `calls` section and then add the more detailed call in `postCalls` setting it to rely on the output of `DescribeInstances`.
 
@@ -162,16 +165,39 @@ getGroup: {
 },
 ```
 This section tells CloudSploit to wait until the `IAM:listGroups` call has been made, and then loop through the data that is returned. The `filterKey` tells CloudSploit the name of the key from the original response, while `filterValue` tells it which property to set in the `getGroup` call filter. For example: `iam.getGroup({GroupName:abc})` where `abc` is the `GroupName` from the returned list. CloudSploit will loop through each response, re-invoking `getGroup` for each element.
+#### Azure
+```
+virtualMachines: {
+  listAll: {
+    api: "ComputeManagementClient",
+    arm: true
+  }
+},
+```
+This Declaration tells the Cloudsploit collection engine to query the Compute Management Service using the virtualMachines:listAll call.
 
+The second section in `collect.js` is `postcalls`, which is an array of objects defining API calls that rely on other calls being returned first. For example, if you need to first query for all virtual machine instances, and then loop through each instance and run a more detailed call, you would add the more detailed call in `postcalls` setting it to rely on the output of `virtualMachines:listAll`.
+```
+virtualMachineExtensions: {
+  list: {
+    api: "ComputeManagementClient",
+    reliesOnService: ['resourceGroups', 'virtualMachines'],
+    reliesOnCall: ['list', 'listAll'],
+    filterKey: ['resourceGroupName', 'name'],
+    filterValue: ['resourceGroupName', 'name'],
+    arm: true
+  }
+},
+```
 ### Scanning Phase
 After the data has been collected, it is passed to the scanning engine when the results are analyzed for risks. Each plugin must export the following:
 
 * Exports the following:
   * ```title``` (string): a user-friendly title for the plugin
-  * ```category``` (string): the AWS category (EC2, RDS, ELB, etc.)
+  * ```category``` (string): the cloud infrastructure category (EC2, RDS, ELB, etc.)
   * ```description``` (string): a description of what the plugin does
   * ```more_info``` (string): a more detailed description of the risk being tested for
-  * ```link``` (string): an AWS help URL describing the service or risk, preferably with mitigation methods
+  * ```link``` (string): an cloud infrastructure help URL describing the service or risk, preferably with mitigation methods
   * ```recommended_action``` (string): what the user should do to mitigate the risk found
   * ```run``` (function): a function that runs the test (see below)
 * Accepts a ```collection``` object via the run function containing the full collection object obtained in the first phase.
@@ -187,14 +213,14 @@ Each test has a result code that is used to determine if the test was successful
 
 ### Tips for Writing Plugins
 * Many security risks can be detected using the same API calls. To minimize the number of API calls being made, utilize the `cache` helper function to cache the results of an API call made in one test for future tests. For example, two plugins: "s3BucketPolicies" and "s3BucketPreventDelete" both call APIs to list every S3 bucket. These can be combined into a single plugin "s3Buckets" which exports two tests called "bucketPolicies" and "preventDelete". This way, the API is called once, but multiple tests are run on the same results.
-* Ensure AWS API calls are being used optimally. For example, call describeInstances with empty parameters to get all instances, instead of calling describeInstances multiple times looping through each instance name.
+* Ensure cloud infrastructure API calls are being used optimally. For example, call describeInstances with empty parameters to get all instances, instead of calling describeInstances multiple times looping through each instance name.
 * Use async.eachLimit to reduce the number of simultaneous API calls. Instead of using a for loop on 100 requests, spread them out using async's each limit.
 
 ### Example
+#### AWS
 To more clearly illustrate writing a new plugin, let's consider the "IAM Empty Groups" plugin. First, we know that we will need to query for a list of groups via `listGroups`, then loop through each group and query for the more detailed set of data via `getGroup`.
 
 We'll add these API calls to `collect.js`. First, under `calls` add:
-
 ```
 IAM: {
   listGroups: {
@@ -240,10 +266,73 @@ Now, we can write the plugin functionality by checking for the data relevant to 
 if (!getGroup || getGroup.err || !getGroup.data || !getGroup.data.Users) {
   helpers.addResult(results, 3, 'Unable to query for group: ' + group.GroupName, 'global', group.Arn);
 } else if (!getGroup.data.Users.length) {
-  helpers.addResult(results, 1, 'Group: ' + group.GroupName + ' does not contain any users', 'global', group.Arn);
+  helpers.addResult(results, 0, 'Group: ' + group.GroupName + ' does not contain any users', 'global', group.Arn);
   return cb();
 } else {
   helpers.addResult(results, 0, 'Group: ' + group.GroupName + ' contains ' + getGroup.data.Users.length + ' user(s)', 'global', group.Arn);
+}
+```
+The `addResult` function ensures we are adding the results to the `results` array in the proper format. This function accepts the following:
+```
+(results array, score, message, region, resource)
+```
+The `resource` is optional, and the `score` must be between 0 and 3 to indicate PASS, WARN, FAIL, or UNKNOWN.
+
+#### Azure
+To more clearly illustrate writing a new plugin, let's consider the "VirtualMachines vmEndpointProtection" plugin. First, we know that we will need to query for a list of virtual machines via `virtualMachines:listAll`, then loop through each group and query for the more detailed set of data via `virtualMachineExtensions:list`.
+
+We'll add these API calls to `collect.js`. First, under `calls` add:
+
+```
+virtualMachines: {
+  listAll: {
+    api: "ComputeManagementClient",
+    arm: true
+  }
+},
+```
+
+Then, under `postcalls`, add:
+```
+virtualMachineExtensions: {
+  list: {
+    api: "ComputeManagementClient",
+    reliesOnService: ['resourceGroups', 'virtualMachines'],
+    reliesOnCall: ['list', 'listAll'],
+    filterKey: ['resourceGroupName', 'name'],
+    filterValue: ['resourceGroupName', 'name'],
+    arm: true
+  }
+},
+```
+CloudSploit will first get the list of virtual machines, then, it will loop through each one, using the virtual machine name to get more detailed info via `virtualMachineExtensions`.
+
+Next, we'll write the plugin. Create a new file in the `plugins/virtualmachines` folder called `vmEndpointProtection.js` (this plugin already exists, but you can create a similar one for the purposes of this example).
+
+In the file, we'll be sure to export the plugin's title, category, description, link, and more information about it. Additionally, we will add any API calls it makes:
+```
+apis: ['resourceGroups:list', 'virtualMachines:listAll', 'virtualMachineExtensions:list'],
+```
+In the `run` function, we can obtain the output of the collection phase from earlier by doing:
+```
+var virtualMachines = helpers.addSource(cache, source, 
+        ['virtualMachines', 'listAll', location]);
+```
+Then, we can loop through each of the results and do:
+```
+var virtualMachineExtensions = helpers.addSource(cache, source,     ['virtualMachineExtensions', 'list', location]);
+```
+The `helpers` function ensures that the proper results are returned from the collection and that they are saved into a "source" variable which can be returned with the results.
+
+Now, we can write the plugin functionality by checking for the data relevant to our requirements:
+```
+if (virtualMachineExtensions.err || !virtualMachineExtensions.data) {
+    helpers.addResult(results, 3, 
+        Unable to query for VM Extensions: ' + helpers.addError(virtualMachineExtensions), location);
+                return rcb();
+}
+if (!virtualMachineExtensions.data.length) {
+    helpers.addResult(results, 0, 'No VM Extensions found', location);
 }
 ```
 The `addResult` function ensures we are adding the results to the `results` array in the proper format. This function accepts the following:
