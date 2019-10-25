@@ -28,9 +28,9 @@ npm install
 
 ## Configuration
 To begin using the scanner, edit the `index.js` file with the corresponding settings. You can use any of these three options:
- * Enter your settings [inline](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L13-L53).
- * Create a json [file](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L57-L61).
- * Use [environment variables](https://github.com/cloudsploit/scans/blob/readme-updates/index.js#L64-L109). 
+ * Enter your settings [inline](https://github.com/cloudsploit/scans/blob/master/index.js#L13-L53).
+ * Create a json [file](https://github.com/cloudsploit/scans/blob/master/index.js#L57-L61).
+ * Use [environment variables](https://github.com/cloudsploit/scans/blob/master/index.js#L64-L109). 
 
 Cloud Infrastructure configuration steps:
 
