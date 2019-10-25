@@ -51,7 +51,28 @@ Enter a memorable role name and create the role.
 Then click on the role name and copy the role ARN for use in the next step.
 
 #### Azure
-Steps for Azure go here
+1. Log into your Azure Portal and navigate to the Azure Active Directory service.
+2. Select App registrations and then click on New registration.
+3. Enter "CloudSploit" and/or a descriptive name in the Name field, take note of it, it will be used again in step 3.
+4. Leave the "Supported account types" default: "Accounts in this organizational directory only (YOURDIRECTORYNAME)".
+5. Click on Register.
+6. Copy the Application ID and Paste it below.
+7. Copy the Directory ID and Paste it below.
+8. Click on Certificates & secrets.
+9. Under Client secrets, click on New client secret.
+10. Enter a Description (i.e. Cloudsploit-2019) and select Expires "In 1 year".
+11. Click on Add.
+12. The Client secret value will only be visible once, copy and paste below, and or in your own offline KMS for safe-keeping.
+13. Navigate to Subscriptions.
+14. Click on the relevant Subscription ID, copy and paste the ID below.
+15. Click on "Access Control (IAM)".
+16. Go to the Role assignments tab.
+17. Click on "Add", then "Add role assignment".
+18. In the "Role" drop-down, select "Security Reader".
+19. Leave the "Assign access to" default value.
+20. In the "Select" drop-down, type the name of the app registration (e.g. "CloudSploit") you created and select it.
+21. Click "Save".
+22. Repeat the process for the role "Log Analytics Reader"
 
 ## Permissions
 The scans require read-only permissions to your account. This can be done by adding the "Security Audit" AWS managed policy to your IAM user or role.
