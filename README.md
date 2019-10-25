@@ -355,7 +355,7 @@ The `resource` is optional, and the `score` must be between 0 and 3 to indicate 
 
 When using the [hosted scanner](https://cloudsploit.com/scan), you will be able to see an intuitive visual representation of teh can results. For example, in the CloudSploit console, printable scan results look as folllows:
 
-[<img src="https://github.com/Mav55/scans/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
+[<img src="https://github.com/Mav55/scans/blob/readme-updates/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
 
 ### Cross-account IAM role
 
