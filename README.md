@@ -48,7 +48,7 @@ Create a "cloudsploit" user, with the `SecurityAudit` policy.
 3. Set the username to "cloudsploit" 
 4. Set the access type to "Programmatic access", click Next.
 5. Select one of your preferred options, if you have a group with SecurityAudit role assign the new user to that group.
-6. If not select the "Attach existing policies directly" and seletect the SecurityAudit policy, click Next.
+6. If not select the "Attach existing policies directly" and select the SecurityAudit policy, click Next.
 7. Set tags as needed and then click on "Create user".
 8. Make sure you safely store the Access key ID and Secret access key.
 9. Paste them into the corresponding AWS credentials section of the `index.js` file.
@@ -71,7 +71,7 @@ For more information on using our hosted scanner, [click here](#other-notes)
 9. Under Client secrets, click on New client secret.
 10. Enter a Description (i.e. Cloudsploit-2019) and select Expires "In 1 year".
 11. Click on Add.
-12. The Client secret value will only be visible once, copy and paste below, and or in your own offline KMS for safe-keeping.
+12. The Client secret value appears only once, make sure you store it safely.
 13. Navigate to Subscriptions.
 14. Click on the relevant Subscription ID, copy and paste the ID below.
 15. Click on "Access Control (IAM)".
@@ -141,9 +141,9 @@ CloudSploit works in two phases. First, it queries the cloud infrastructure APIs
 
 ### Collection Phase  
 
-To write a plugin, you must understand what cloud infrastructure API calls your scan makes. These must be added to the `collect.js` file. This file determines the cloud infrastructure API calls and the order in which they are made. For example:
+To write a plugin, you will want to understand what cloud infrastructure API calls your scan makes. These must be added to the `collect.js` file. This file determines the cloud infrastructure API calls and the order in which they are made. For example:
 
-#### AWS
+#### AWS Collection
 
 The following declaration tells the CloudSploit collection engine to query the CloudFront service using the `listDistributions` call and then save the results returned under `DistributionList.Items`.
 
@@ -170,7 +170,7 @@ getGroup: {
 
 This section tells CloudSploit to wait until the `IAM:listGroups` call has been made, and then loop through the data that is returned. The `filterKey` tells CloudSploit the name of the key from the original response, while `filterValue` tells it which property to set in the `getGroup` call filter. For example: `iam.getGroup({GroupName:abc})` where `abc` is the `GroupName` from the returned list. CloudSploit will loop through each response, re-invoking `getGroup` for each element.
 
-#### Azure
+#### Azure Collection
 
 The following declaration tells the Cloudsploit collection engine to query the Compute Management Service using the virtualMachines:listAll call.
 
@@ -353,7 +353,7 @@ The `resource` is optional, and the `score` must be between 0 and 3 to indicate 
 
 ## Other Notes
 
-When using the [hosted scanner](https://cloudsploit.com/scan), you will be able to see an intuitive visual representation of teh can results. For example, in the CloudSploit console, printable scan results look as folllows:
+When using the [hosted scanner](https://cloudsploit.com/scan), you will be able to see an intuitive visual representation of the scan results. In CloudSploit's console, printable scan results look as folllows:
 
 [<img src="https://github.com/Mav55/scans/blob/readme-updates/assets/img/cloudsploit-printable-reports.png">](https://console.cloudsploit.com/signup)
 
